@@ -16,16 +16,12 @@ passport.use(new GoogleStrategy({
             //
             let user = await db.User.findOne({ where: { googleId: profile.id } });
             //
-            const randomPassword = crypto.randomBytes(16).toString('hex');
-            const hashedPassword = await bcrypt.hash(randomPassword, 10);
-            //
             if (!user) {
                 user = await db.User.create({
                     googleId: profile.id,
-                    password: hashedPassword,
-                    name: profile.displayName,
+                    fullName: profile.displayName,
                     email: profile.emails[0].value,
-                    IsVerify: true
+                    uniqueCode: crypto.randomBytes(16).toString('hex'),
                 });
                 //
                 welcomeMail.sendMail(user.email)

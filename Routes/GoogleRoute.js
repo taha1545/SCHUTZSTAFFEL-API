@@ -13,7 +13,7 @@ require('../app/Services/GoogleStrategy');
 // Session
 Router.use(
     session({
-        secret: process.env.SESSION_SECRET || 'defaultsecret',
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
     })
@@ -23,15 +23,15 @@ Router.use(passport.initialize());
 Router.use(passport.session());
 
 //
-Router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+Router.get('/', passport.authenticate('google', { scope: ['profile', 'email'] }));
 // 
-Router.get('/google/callback',
+Router.get('/callback',
     passport.authenticate('google', { failureRedirect: '/login' }),
     (req, res) => {
         // 
         const token = Auth.CreateToken({
             id: req.user.id,
-            role: req.user.role || "client"
+            role: "student",
         });
         //
         res.redirect(`${process.env.FRONT_URL_CALLBACK}?token=${token}`);

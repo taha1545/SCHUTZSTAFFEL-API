@@ -1,0 +1,423 @@
+SCHUTZSTAFFEL API - POSTMAN IMPORT FORMAT
+================================================
+
+BASE URL: http://localhost:3000/api
+
+AUTHENTICATION ENDPOINTS
+========================
+
+POST /auth/student/signup
+- No Auth Required
+- Body: {fullName, email, grade (optional)}
+- Purpose: Register new student account
+
+POST /auth/student/login
+- No Auth Required
+- Body: {uniqueCode}
+- Purpose: Student login, returns JWT token
+
+POST /auth/teacher/signup
+- No Auth Required
+- Body: {name, email, password}
+- Purpose: Register new teacher account
+
+POST /auth/teacher/login
+- No Auth Required
+- Body: {email, password}
+- Purpose: Teacher login, returns JWT token 
+
+GET /google
+- No Auth Required
+- Purpose: Initiate Google OAuth 2.0 login
+
+GET /google/callback
+- No Auth Required
+- Purpose: Google OAuth callback endpoint
+
+
+USER MANAGEMENT ENDPOINTS
+=========================
+
+GET /users/me
+- Auth Required: Yes (JWT Token)
+- Purpose: Get current logged-in user profile
+
+GET /users
+- Auth Required: Yes
+- Role Required: Admin
+- Purpose: Get all users list
+
+GET /users/:id
+- Auth Required: Yes
+- Role Required: Admin
+- Path Param: id (user ID)
+- Purpose: Get specific user by ID
+
+PUT /users/me
+- Auth Required: Yes
+- Body: {fullName (optional), email (optional), grade (optional)}
+- Purpose: Update current user profile
+
+DELETE /users/:id
+- Auth Required: Yes
+- Role Required: Admin
+- Path Param: id (user ID)
+- Purpose: Delete user
+
+GET /users/search
+- Auth Required: No
+- Query Param: q (search query)
+- Purpose: Search users by name or email
+
+GET /users/by-goal/:goalId
+- Auth Required: No
+- Path Param: goalId (goal ID)
+- Purpose: Get all users associated with a goal
+
+
+TEACHER MANAGEMENT ENDPOINTS
+============================
+
+POST /teachers
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Body: {name, email, password}
+- Purpose: Create new teacher
+
+GET /teachers
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Purpose: Get all teachers list
+
+GET /teachers/:id
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Path Param: id (teacher ID)
+- Purpose: Get specific teacher
+
+PUT /teachers/:id
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Path Param: id (teacher ID)
+- Body: {name (optional), email (optional), password (optional)}
+- Purpose: Update teacher information
+
+DELETE /teachers/:id
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Path Param: id (teacher ID)
+- Purpose: Delete teacher
+
+
+GOAL MANAGEMENT ENDPOINTS
+=========================
+
+POST /goals
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Body: {name, description (optional), duration (optional), domain (optional), teacherId (optional)}
+- Purpose: Create new learning goal
+
+GET /goals
+- Auth Required: Yes
+- Purpose: Get all goals
+
+GET /goals/teacher/:teacherId
+- Auth Required: Yes
+- Path Param: teacherId
+- Purpose: Get all goals created by specific teacher
+
+GET /goals/:id
+- Auth Required: Yes
+- Path Param: id (goal ID)
+- Purpose: Get specific goal
+
+PUT /goals/:id
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Path Param: id (goal ID)
+- Body: {name (optional), description (optional), duration (optional), domain (optional), teacherId (optional)}
+- Purpose: Update goal
+
+DELETE /goals/:id
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Path Param: id (goal ID)
+- Purpose: Delete goal
+
+
+TASK MANAGEMENT ENDPOINTS
+=========================
+
+POST /tasks
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Body: {title, description (optional), deadline (optional), taskKey (optional), isUsedKey (optional), goalId (optional)}
+- Purpose: Create new task
+
+GET /tasks
+- Auth Required: Yes
+- Purpose: Get all tasks
+
+GET /tasks/goal/:goalId
+- Auth Required: Yes
+- Path Param: goalId
+- Purpose: Get all tasks for specific goal
+
+GET /tasks/:id
+- Auth Required: Yes
+- Path Param: id (task ID)
+- Purpose: Get specific task
+
+POST /tasks/:id/assign
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Path Param: id (task ID)
+- Body: {userId}
+- Purpose: Assign task to student
+
+PUT /tasks/:id
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Path Param: id (task ID)
+- Body: {title (optional), description (optional), deadline (optional), taskKey (optional), isUsedKey (optional), goalId (optional)}
+- Purpose: Update task
+
+DELETE /tasks/:id
+- Auth Required: Yes
+- Role Required: Admin, Teacher
+- Path Param: id (task ID)
+- Purpose: Delete task
+
+
+USER TASK ENDPOINTS
+===================
+
+POST /user-tasks
+- Auth Required: Yes
+- Body: {userId, taskId, status (optional: Pending/In-Progress/Completed), keySubmitted (optional), note (optional)}
+- Purpose: Create user task assignment
+
+GET /user-tasks
+- Auth Required: Yes
+- Purpose: Get all user task assignments
+
+GET /user-tasks/user/:userId
+- Auth Required: Yes
+- Path Param: userId
+- Purpose: Get all tasks assigned to specific user
+
+GET /user-tasks/task/:taskId
+- Auth Required: Yes
+- Path Param: taskId
+- Purpose: Get all users assigned to specific task
+
+GET /user-tasks/:id
+- Auth Required: Yes
+- Path Param: id (user task ID)
+- Purpose: Get specific user task assignment
+
+PUT /user-tasks/:id
+- Auth Required: Yes
+- Path Param: id (user task ID)
+- Body: {status (optional: Pending/In-Progress/Completed), keySubmitted (optional), completedAt (optional), note (optional)}
+- Purpose: Update user task (mark as completed)
+
+DELETE /user-tasks/:id
+- Auth Required: Yes
+- Path Param: id (user task ID)
+- Purpose: Delete user task assignment
+
+
+BADGE MANAGEMENT ENDPOINTS
+==========================
+
+GET /badges
+- Auth Required: No
+- Purpose: Get all badges
+
+GET /badges/:id
+- Auth Required: No
+- Path Param: id (badge ID)
+- Purpose: Get specific badge
+
+POST /badges
+- Auth Required: Yes
+- Role Required: Admin
+- Content-Type: application/json
+- Body Fields: {name, description (optional), iconPath (optional), minXpRequired}
+- Purpose: Create new badge
+
+PUT /badges/:id
+- Auth Required: Yes
+- Role Required: Admin
+- Path Param: id (badge ID)
+- Body: {name (optional), description (optional), iconPath (optional), minXpRequired (optional)}
+- Purpose: Update badge
+
+DELETE /badges/:id
+- Auth Required: Yes
+- Role Required: Admin
+- Path Param: id (badge ID)
+- Purpose: Delete badge
+
+
+USER BADGE ENDPOINTS
+====================
+
+POST /user-badges
+- Auth Required: Yes
+- Body: {badgeId, userId}
+- Purpose: Award badge to user
+
+GET /user-badges
+- Auth Required: Yes
+- Purpose: Get all user badges
+
+GET /user-badges/user/:userId
+- Auth Required: Yes
+- Path Param: userId
+- Purpose: Get all badges earned by specific user
+
+GET /user-badges/badge/:badgeId
+- Auth Required: Yes
+- Path Param: badgeId
+- Purpose: Get all users who earned specific badge
+
+GET /user-badges/:id
+- Auth Required: Yes
+- Path Param: id (user badge ID)
+- Purpose: Get specific user badge award
+
+DELETE /user-badges/:id
+- Auth Required: Yes
+- Path Param: id (user badge ID)
+- Purpose: Remove badge from user
+
+
+CONTACT ENDPOINTS
+=================
+
+POST /contact
+- Auth Required: No
+- Body: {name, email, subject, message}
+- Purpose: Submit contact form
+
+GET /contact
+- Auth Required: No
+- Purpose: Get all contact messages
+
+GET /contact/:id
+- Auth Required: No
+- Path Param: id (contact ID)
+- Purpose: Get specific contact message
+
+DELETE /contact/:id
+- Auth Required: No
+- Path Param: id (contact ID)
+- Purpose: Delete contact message
+
+
+STUDENT DASHBOARD ENDPOINTS
+===========================
+
+GET /student/dashboard
+- Auth Required: Yes
+- Role Required: Student
+- Purpose: Get student dashboard (tasks, goals, badges, progress)
+
+
+TEACHER DASHBOARD ENDPOINTS
+==========================
+
+GET /teacher/progress/:userId
+- Auth Required: Yes
+- Role Required: Teacher
+- Path Param: userId
+- Purpose: Get detailed progress of specific student
+
+POST /teacher/students
+- Auth Required: Yes
+- Role Required: Teacher
+- Body: {userId}
+- Purpose: Add student to teacher's class
+
+
+AUTHORIZATION LEVELS
+====================
+
+No Auth: Public endpoints - no authentication required
+JWT Required: Must have valid JWT token in Authorization header
+Admin Only: User must have admin role
+Teacher Only: User must have teacher role
+Student Only: User must have student role
+Admin + Teacher: User must be either admin or verified teacher
+
+
+HEADER FORMAT FOR AUTHENTICATED REQUESTS
+========================================
+
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+
+Example:
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+
+RESPONSE FORMAT
+===============
+
+Success (2xx):
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": { ... }
+}
+
+Error (4xx/5xx):
+{
+  "success": false,
+  "message": "Error description",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Invalid email format"
+    }
+  ]
+}
+
+
+TOTAL ENDPOINT COUNT: 65+ Endpoints
+
+Categories:
+- Authentication: 6 endpoints
+- Users: 7 endpoints
+- Teachers: 5 endpoints
+- Goals: 6 endpoints
+- Tasks: 7 endpoints
+- User Tasks: 7 endpoints
+- Badges: 5 endpoints
+- User Badges: 6 endpoints
+- Contacts: 4 endpoints
+- Student Dashboard: 1 endpoint
+- Teacher Dashboard: 2 endpoints
+
+
+
+
+DATABASE MODELS
+===============
+
+- User: Student profiles
+- Teacher: Teacher profiles
+- Goal: Learning objectives
+- Task: Individual assignments
+- UserTask: Task assignments to students
+- Badge: Achievement rewards
+- UserBadge: Badge awards to users
+- Contact: Contact form submissions
+- TeacherStudents: Teacher-student relationships
+
+
+

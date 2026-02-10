@@ -2,50 +2,28 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    return await queryInterface.createTable("users", {
+    return await queryInterface.createTable("badges", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      fullName: {
+      name: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      email: {
-        type: Sequelize.STRING,
-        unique: true,
-        allowNull: false,
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: true,
       },
-      grade: {
+      iconPath: {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      googleId: {
-        type: Sequelize.STRING,
-        unique: true,
-        allowNull: true,
-      },
-      uniqueCode: {
-        type: Sequelize.STRING,
-        allowNull: true,
-        unique: true,
-      },
-      xpPoints: {
+      minXpRequired: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0,
-      },
-      level: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 1,
-      },
-      currentStreak: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
       },
       createdAt: {
         allowNull: false,
@@ -61,6 +39,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    return await queryInterface.dropTable("users");
+    return await queryInterface.dropTable("badges");
   },
 };

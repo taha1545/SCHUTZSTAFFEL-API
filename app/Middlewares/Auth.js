@@ -32,13 +32,40 @@ const checkAdmin = (req, res, next) => {
         return next(new AuthError('User not authenticated'));
     }
     //
-    if (req.user.role !== 'admin') {
+    if (req.user.role !== 'teacher') {
         return next(new AuthError('Admin access required'));
     }
     next();
 };
 
+const db = require('../../db/models');
+
+const checkTeacherVerified = async (req, res, next) => {
+    if (!req.user || req.user.role !== 'teacher') {
+        return next(new AuthError('Teacher access required'));
+    }
+    try {
+        const teacher = await db.Teacher.findByPk(req.user.id);
+        if (!teacher) return next(new AuthError('Teacher not found'));
+        if (!teacher.isVerified) {
+            return next(new AuthError('Account is not verified. Please wait for admin verification.'));
+        }
+        req.teacher = teacher;
+        next();
+    } catch (err) {
+        next(err);
+    }
+};
+
+const checkStudent = (req, res, next) => {
+    if (!req.user) return next(new AuthError('User not authenticated'));
+    if (req.user.role !== 'student') return next(new AuthError('Student access required'));
+    next();
+};
+
 module.exports = {
     checkAuth,
-    checkAdmin
+    checkAdmin,
+    checkTeacherVerified,
+    checkStudent,
 };

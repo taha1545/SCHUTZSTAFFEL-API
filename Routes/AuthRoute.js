@@ -1,44 +1,32 @@
+"use strict";
+
 const express = require("express");
-const Router = express.Router();
-
-const AuthController = require('../Controllers/AuthController');
-const Upload = require('../app/Services/Storage');
-const AuthMiddleware = require('../app/Middlewares/Auth');
-const UserValidation = require('../app/Validators/UserValidator');
-const Validate = require('../app/Middlewares/validate');
-const UserController = require('../Controllers/UserController');
-const VerifyController = require('../Controllers/VerifyController');
-
+const router = express.Router();
 //
-Router.post('/signup', Upload.single('image'), UserValidation.signupValidation, Validate, AuthController.signUp);
+const AuthController = require("../Controllers/AuthController");
+const UserValidator = require("../app/Validators/UserValidator");
+const {
+  createTeacherValidation,
+  loginTeacherValidation,
+} = require("../app/Validators/TeacherValidator");
+const validate = require("../app/Middlewares/validate");
 
-Router.post('/login', UserValidation.loginValidation, Validate, AuthController.login);
+// Student 
+router.post("/student/signup", UserValidator.signupValidation, validate, AuthController.signUp);
+router.post("/student/login", UserValidator.loginValidation, validate, AuthController.login);
 
-Router.post('/sendOtp', AuthController.sendOtp);
+// Teacher 
+router.post(
+  "/teacher/signup",
+  createTeacherValidation,
+  validate,
+  AuthController.teacherSignup
+);
+router.post(
+  "/teacher/login",
+  loginTeacherValidation,
+  validate,
+  AuthController.teacherLogin
+);
 
-Router.put('/reset-password-otp', UserValidation.resetPasswordValidation, Validate, AuthController.ResetOTP);
-
-Router.patch('/reset-password', AuthMiddleware.checkAuth, UserValidation.updatePasswordValidation, Validate, AuthController.resetPassword);
-
-// 
-
-Router.get('/me', AuthMiddleware.checkAuth, UserController.getUserByToken);
-
-Router.put('/update', AuthMiddleware.checkAuth, UserValidation.updateUserValidation, Validate, UserController.updateUserByToken);
-
-// 
-
-Router.get('/', AuthMiddleware.checkAuth, AuthMiddleware.checkAdmin, UserController.getAllUsers);
-
-Router.get('/:id', AuthMiddleware.checkAuth, AuthMiddleware.checkAdmin, UserController.getUserById);
-
-Router.delete('/:id', AuthMiddleware.checkAuth, AuthMiddleware.checkAdmin, UserController.deleteUserById);
-
-//
-
-Router.post('/send-verify-otp', VerifyController.otpVerify);
-
-Router.put('/verify-email', VerifyController.Verify);
-
-
-module.exports = Router;
+module.exports = router;

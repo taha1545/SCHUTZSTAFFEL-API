@@ -2,50 +2,40 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    return await queryInterface.createTable("users", {
+    return await queryInterface.createTable("tasks", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      fullName: {
+      title: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      email: {
-        type: Sequelize.STRING,
-        unique: true,
-        allowNull: false,
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: true,
       },
-      grade: {
+      deadline: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
+      taskKey: {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      googleId: {
-        type: Sequelize.STRING,
-        unique: true,
+      isUsedKey: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      goalId: {
+        type: Sequelize.INTEGER,
         allowNull: true,
-      },
-      uniqueCode: {
-        type: Sequelize.STRING,
-        allowNull: true,
-        unique: true,
-      },
-      xpPoints: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-      },
-      level: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 1,
-      },
-      currentStreak: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
+        references: { model: "goals", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL",
       },
       createdAt: {
         allowNull: false,
@@ -61,6 +51,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    return await queryInterface.dropTable("users");
+    return await queryInterface.dropTable("tasks");
   },
 };

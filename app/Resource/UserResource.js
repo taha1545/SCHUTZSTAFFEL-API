@@ -1,10 +1,28 @@
 
+"use strict";
+
 module.exports = (user) => {
-    return {
+    const out = {
         id: user.id,
-        name: user.name,
+        fullName: user.fullName || null,
         email: user.email,
-        imagePath: user.imagePath || "",
-        IsVerify: user.IsVerify
+        grade: user.grade || null,
+        googleId: user.googleId || null,
+        uniqueCode: user.uniqueCode || null,
+        xpPoints: user.xpPoints || 0,
+        level: user.level || 1,
+        currentStreak: user.currentStreak || 0,
+    };
+
+    if (user.Badges) {
+        out.badges = user.Badges.map(b => ({
+            id: b.id,
+            name: b.name,
+            description: b.description,
+            iconPath: b.iconPath,
+            minXpRequired: b.minXpRequired,
+        }));
     }
+
+    return out;
 };

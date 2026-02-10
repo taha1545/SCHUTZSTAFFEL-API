@@ -1,48 +1,51 @@
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {
-    return sequelize.define("User", {
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
+    return sequelize.define(
+        "User",
+        {
+            fullName: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            email: {
+                type: DataTypes.STRING,
+                unique: true,
+                allowNull: false,
+            },
+            grade: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
+            googleId: {
+                type: DataTypes.STRING,
+                unique: true,
+                allowNull: true,
+            },
+            uniqueCode: {
+                type: DataTypes.STRING,
+                unique: true,
+                allowNull: true,
+            },
+            xpPoints: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+            level: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 1,
+            },
+            currentStreak: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
         },
-        email: {
-            type: DataTypes.STRING,
-            unique: true,
-            allowNull: false,
-        },
-        role: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            defaultValue: "client",
-        },
-        password: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        imagePath: {
-            type: DataTypes.STRING,
-            allowNull: true,
-        },
-        IsVerify: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            defaultValue: false
-        },
-        otpCode: {
-            type: DataTypes.STRING,
-            allowNull: true,
-        },
-        otpAt: {
-            type: DataTypes.DATE,
-            allowNull: true,
-        },
-        googleId: {
-            type: DataTypes.STRING,
-            unique: true,
-            allowNull: true
+        {
+            tableName: "users",
+            timestamps: true,
         }
-    }, {
-        tableName: "users"
-    });
+    );
 };
