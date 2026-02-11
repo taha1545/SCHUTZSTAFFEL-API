@@ -7,12 +7,14 @@ const { createTaskValidation, updateTaskValidation } = require('../app/Validator
 const validate = require('../app/Middlewares/validate');
 const { checkAuth, checkAdmin, checkTeacherVerified } = require('../app/Middlewares/Auth');
 
-router.post('/', checkAuth, checkAdmin, checkTeacherVerified, createTaskValidation, validate, TaskController.createTask);
-router.post('/:id/assign', checkAuth, checkAdmin, checkTeacherVerified, TaskController.assignTask);
-router.get('/', checkAuth, TaskController.getAllTasks);
-router.get('/goal/:goalId', checkAuth, TaskController.getTasksByGoal);
-router.get('/:id', checkAuth, TaskController.getTaskById);
-router.put('/:id', checkAuth, checkAdmin, checkTeacherVerified, updateTaskValidation, validate, TaskController.updateTask);
-router.delete('/:id', checkAuth, checkAdmin, checkTeacherVerified, TaskController.deleteTask);
+router.post('/', checkAuth, checkTeacherVerified, createTaskValidation, validate, TaskController.createTask);
+router.post('/:id/assign', checkAuth, checkTeacherVerified, TaskController.assignTask);
+//
+router.get('/', TaskController.getAllTasks);
+router.get('/goal/:goalId', TaskController.getTasksByGoal);
+router.get('/:id', TaskController.getTaskById);
+//
+router.put('/:id', checkAuth, checkTeacherVerified, updateTaskValidation, validate, TaskController.updateTask);
+router.delete('/:id', checkAuth, checkTeacherVerified, TaskController.deleteTask);
 
 module.exports = router;

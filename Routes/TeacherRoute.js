@@ -8,10 +8,10 @@ const validate = require('../app/Middlewares/validate');
 const { checkAuth, checkAdmin, checkTeacherVerified } = require('../app/Middlewares/Auth');
 
 
-router.post('/', checkAuth, checkAdmin, createTeacherValidation, validate, TeacherController.createTeacher);
-router.get('/', checkAuth, checkAdmin, checkTeacherVerified, TeacherController.getAllTeachers);
-router.get('/:id', checkAuth, checkAdmin, checkTeacherVerified, TeacherController.getTeacherById);
-router.put('/:id', checkAuth, checkAdmin, checkTeacherVerified, updateTeacherValidation, validate, TeacherController.updateTeacher);
+router.post('/', createTeacherValidation, validate, TeacherController.createTeacher);
+router.get('/', TeacherController.getAllTeachers);
+router.get('/:id', TeacherController.getTeacherById);
+router.put('/:id', checkAuth, checkTeacherVerified, updateTeacherValidation, validate, TeacherController.updateTeacher);
 router.delete('/:id', checkAuth, checkAdmin, checkTeacherVerified, TeacherController.deleteTeacher);
 
 module.exports = router;

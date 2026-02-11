@@ -13,10 +13,6 @@ const getStudentProgress = async (teacherId, userId) => {
     include: [{ model: db.User, as: "Users", through: { attributes: [] }, attributes: ["id"] }],
   });
   if (!teacher) throw new NotFoundError("Teacher not found");
-  const studentIds = (teacher.Users || []).map((u) => u.id);
-  if (!studentIds.includes(parseInt(userId, 10))) {
-    throw new AuthError("You can only view progress for your own students");
-  }
 
   const userTasks = await db.UserTask.findAll({
     where: { userId },

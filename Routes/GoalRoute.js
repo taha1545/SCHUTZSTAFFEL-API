@@ -7,11 +7,12 @@ const { createGoalValidation, updateGoalValidation } = require('../app/Validator
 const validate = require('../app/Middlewares/validate');
 const { checkAuth, checkAdmin, checkTeacherVerified } = require('../app/Middlewares/Auth');
 
-router.post('/', checkAuth, checkAdmin, checkTeacherVerified, createGoalValidation, validate, GoalController.createGoal);
-router.get('/', checkAuth, GoalController.getAllGoals);
-router.get('/teacher/:teacherId', checkAuth, checkTeacherVerified, GoalController.getGoalsByTeacher);
-router.get('/:id', checkAuth, GoalController.getGoalById);
-router.put('/:id', checkAuth, checkAdmin, checkTeacherVerified, updateGoalValidation, validate, GoalController.updateGoal);
-router.delete('/:id', checkAuth, checkAdmin, checkTeacherVerified, GoalController.deleteGoal);
+router.post('/', checkAuth, checkTeacherVerified, createGoalValidation, validate, GoalController.createGoal);
+router.get('/', GoalController.getAllGoals);
+router.get('/teacher/:teacherId', GoalController.getGoalsByTeacher);
+router.get('/:id', GoalController.getGoalById);
+//
+router.put('/:id', checkAuth, checkTeacherVerified, updateGoalValidation, validate, GoalController.updateGoal);
+router.delete('/:id', checkAuth, checkTeacherVerified, GoalController.deleteGoal);
 
 module.exports = router;
