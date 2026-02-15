@@ -38,6 +38,24 @@ const getAllTasks = async (req, res) => {
   });
 };
 
+const getAllTasksByDeadline = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 15;
+  const includeRelations = req.query.include === 'relations';
+  const direction = (req.query.order || 'asc').toUpperCase();
+  const { count, rows } = await TaskService.getAllTasksSortedByDeadline(page, limit, includeRelations, direction);
+  res.status(200).json({
+    success: true,
+    tasks: rows.map(task => TaskResource(task)),
+    pagination: {
+      total: count,
+      page,
+      limit,
+      pages: Math.ceil(count / limit),
+    },
+  });
+};
+
 const getTasksByGoal = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 15;
@@ -99,4 +117,5 @@ module.exports = {
   updateTask,
   deleteTask,
   assignTask,
+  getAllTasksByDeadline,
 };

@@ -15,6 +15,7 @@ const taskRoute = require('./TaskRoute');
 const userTaskRoute = require('./UserTaskRoute');
 const badgeRoute = require('./BadgeRoute');
 const userBadgeRoute = require('./UserBadgeRoute');
+const gradeRoute = require('./GradeRoute');
 
 router.use('/auth', authRoute);
 router.use('/contact', contactRoute);
@@ -28,5 +29,6 @@ router.use('/tasks', taskRoute);
 router.use('/user-tasks', userTaskRoute);
 router.use('/badges', badgeRoute);
 router.use('/user-badges', userBadgeRoute);
+router.use('/grades', gradeRoute);
 
 module.exports = router;

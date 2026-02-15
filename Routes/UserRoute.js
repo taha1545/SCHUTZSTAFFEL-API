@@ -11,6 +11,8 @@ router.get('/me', checkAuth, UserController.getUserByToken);
 router.get('/', UserController.getAllUsers);
 router.get('/search', UserController.searchUserByNameOrEmail);
 router.get('/by-goal/:goalId', UserController.getUsersByGoal);
+router.get('/ranking', UserController.getRanking);
+router.get('/most-active-week', UserController.getMostActiveThisWeek);
 router.get('/:id', UserController.getUserById);
 
 router.put('/me', checkAuth, updateUserValidation, validate, UserController.updateUserByToken);

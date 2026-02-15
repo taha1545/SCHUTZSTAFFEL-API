@@ -21,7 +21,7 @@ passport.use(new GoogleStrategy({
                     googleId: profile.id,
                     fullName: profile.displayName,
                     email: profile.emails[0].value,
-                    uniqueCode: crypto.randomBytes(16).toString('hex'),
+                    uniqueCode: crypto.randomBytes(4).toString("hex"),
                 });
                 //
                 welcomeMail.sendMail(user.email)

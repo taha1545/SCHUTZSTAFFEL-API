@@ -10,7 +10,7 @@ const crypto = require('crypto');
 
 const signUp = async (req, res) => {
     const { fullName, email, grade } = req.body;
-    const uniqueCode = crypto.randomBytes(16).toString('hex');
+    const uniqueCode =crypto.randomBytes(4).toString("hex");
     //
     const user = await db.User.create({
         fullName,
@@ -85,9 +85,24 @@ const teacherLogin = async (req, res) => {
   });
 };
 
+const resetPassword = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    throw new AuthError('Email and new password are required');
+  }
+  await TeacherService.resetPasswordByEmail(email, password);
+  res.status(200).json({
+    success: true,
+    message: 'Password reset successfully',
+  });
+};
+
+
+
 module.exports = {
   signUp,
   login,
   teacherSignup,
   teacherLogin,
+  resetPassword,
 };

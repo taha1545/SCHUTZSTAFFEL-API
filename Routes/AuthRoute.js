@@ -29,4 +29,7 @@ router.post(
   AuthController.teacherLogin
 );
 
+// Teacher password reset
+router.post('/reset-password', AuthController.resetPassword);
+
 module.exports = router;

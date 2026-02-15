@@ -27,18 +27,28 @@ const getTeacherById = async (id, includeGoals = false) => {
   return teacher;
 };
 
-const getAllTeachers = async (page = 1, limit = 15, includeGoals = false) => {
+const getAllTeachers = async (
+  page = 1,
+  limit = 15,
+  includeGoals = false,
+  isVerified = null
+) => {
   const offset = (page - 1) * limit;
   const options = {
     limit,
     offset,
     order: [['createdAt', 'DESC']],
+    where: {},
   };
   if (includeGoals) {
     options.include = [{ model: db.Goal }];
   }
-  return await db.Teacher.findAndCountAll(options);
+  if (isVerified !== null) {
+    options.where.isVerified = isVerified;
+  }
+  return db.Teacher.findAndCountAll(options);
 };
+
 
 const updateTeacher = async (id, data) => {
   const teacher = await getTeacherById(id);
@@ -68,6 +78,14 @@ const loginTeacher = async (email, password) => {
   return teacher;
 };
 
+const resetPasswordByEmail = async (email, newPassword) => {
+  const teacher = await db.Teacher.findOne({ where: { email } });
+  if (!teacher) throw new NotFoundError('Teacher not found with this email');
+  const hashed = await hashPassword(newPassword);
+  await teacher.update({ password: hashed });
+  return teacher;
+};
+
 module.exports = {
   createTeacher,
   getTeacherById,
@@ -75,4 +93,5 @@ module.exports = {
   updateTeacher,
   deleteTeacher,
   loginTeacher,
+  resetPasswordByEmail,
 };

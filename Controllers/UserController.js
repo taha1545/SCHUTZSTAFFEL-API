@@ -77,11 +77,11 @@ const searchUserByNameOrEmail = async (req, res) => {
             message: 'Search query is required'
         });
     }
-    
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 15;
     const offset = (page - 1) * limit;
-    
+
     const { count, rows } = await db.User.findAndCountAll({
         where: {
             [db.Sequelize.Op.or]: [
@@ -92,7 +92,7 @@ const searchUserByNameOrEmail = async (req, res) => {
         limit,
         offset,
     });
-    
+
     res.status(200).json({
         success: true,
         users: rows.map(data => UserResource(data)),
@@ -106,14 +106,14 @@ const searchUserByNameOrEmail = async (req, res) => {
 
 const getUsersByGoal = async (req, res) => {
     const { goalId } = req.params;
-    
+
     const goal = await db.Goal.findByPk(goalId);
     if (!goal) throw new notfoundError('Goal not found');
-    
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 15;
     const offset = (page - 1) * limit;
-    
+
     const { count, rows } = await db.User.findAndCountAll({
         include: [
             {
@@ -129,7 +129,7 @@ const getUsersByGoal = async (req, res) => {
         distinct: true,
         subQuery: false
     });
-    
+
     res.status(200).json({
         success: true,
         goalId,
@@ -142,6 +142,90 @@ const getUsersByGoal = async (req, res) => {
     });
 };
 
+const getRanking = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const offset = (page - 1) * limit;
+    const grade = req.query.grade;
+
+    const where = {};
+    if (grade) where.grade = grade;
+
+    const { count, rows } = await db.User.findAndCountAll({
+        where,
+        order: [['xpPoints', 'DESC'], ['createdAt', 'ASC']],
+        limit,
+        offset,
+    });
+
+    res.status(200).json({
+        success: true,
+        users: rows.map(u => UserResource(u)),
+        pagination: {
+            total: count,
+            page,
+            limit,
+            pages: Math.ceil(count / limit)
+        }
+    });
+};
+
+const getMostActiveThisWeek = async (req, res) => {
+    //
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+    const end = new Date();
+
+    // Aggregate on user_tasks
+    const rows = await db.UserTask.findAll({
+        attributes: [
+            'userId',
+            [db.Sequelize.fn('COUNT', db.Sequelize.col('id')), 'completedCount']
+        ],
+        where: {
+            status: 'Completed',
+            completedAt: { [db.Sequelize.Op.between]: [startOfWeek, end] }
+        },
+        group: ['userId'],
+        order: [[db.Sequelize.literal('COUNT(id)'), 'DESC']],
+        limit,
+        offset,
+        raw: true
+    });
+
+    const userIds = rows.map(r => r.userId);
+    if (!userIds.length) {
+        return res.status(200).json({ success: true, users: [], pagination: { page, limit } });
+    }
+
+    const users = await db.User.findAll({
+        where: { id: userIds },
+    });
+
+    // Map counts to users
+    const usersMap = new Map(users.map(u => [u.id, u.get({ plain: true })]));
+    const out = rows.map(r => {
+        const u = usersMap.get(r.userId) || {};
+        return {
+            id: u.id || r.userId,
+            fullName: u.fullName || null,
+            email: u.email || null,
+            grade: u.grade || null,
+            xpPoints: u.xpPoints || 0,
+            completedCount: parseInt(r.completedCount, 10) || 0
+        };
+    });
+
+    res.status(200).json({ success: true, users: out, pagination: { page, limit } });
+};
 
 module.exports = {
     getUserById,
@@ -150,5 +234,7 @@ module.exports = {
     updateUserByToken,
     deleteUserById,
     searchUserByNameOrEmail,
-    getUsersByGoal
+    getUsersByGoal,
+    getRanking,
+    getMostActiveThisWeek
 };

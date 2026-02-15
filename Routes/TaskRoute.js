@@ -11,6 +11,7 @@ router.post('/', checkAuth, checkTeacherVerified, createTaskValidation, validate
 router.post('/:id/assign', checkAuth, checkTeacherVerified, TaskController.assignTask);
 //
 router.get('/', TaskController.getAllTasks);
+router.get('/deadline', TaskController.getAllTasksByDeadline);
 router.get('/goal/:goalId', TaskController.getTasksByGoal);
 router.get('/:id', TaskController.getTaskById);
 //

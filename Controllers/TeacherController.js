@@ -4,6 +4,7 @@ const TeacherResource = require('../app/Resource/TeacherResource');
 const TeacherService = require('../app/Services/TeacherService');
 const TeacherProgressService = require('../app/Services/TeacherProgressService');
 const Auth = require('../app/Services/Auth');
+const db = require('../db/models');
 
 const createTeacher = async (req, res) => {
   const teacher = await TeacherService.createTeacher(req.body);
@@ -27,7 +28,11 @@ const getAllTeachers = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 15;
   const includeGoals = req.query.include === 'goals';
-  const { count, rows } = await TeacherService.getAllTeachers(page, limit, includeGoals);
+  const isVerified =
+    req.query.verified === undefined
+      ? null
+      : req.query.verified === 'true';
+  const { count, rows } = await TeacherService.getAllTeachers(page, limit, includeGoals, isVerified);
   res.status(200).json({
     success: true,
     teachers: rows.map(teacher => TeacherResource(teacher)),
@@ -72,6 +77,14 @@ const loginTeacher = async (req, res) => {
   });
 };
 
+const getMe = async (req, res) => {
+  const teacher = await TeacherService.getTeacherById(req.user.id);
+  res.status(200).json({
+    success: true,
+    teacher: TeacherResource(teacher),
+  });
+};
+
 const getStudentProgress = async (req, res) => {
   const progress = await TeacherProgressService.getStudentProgress(req.user.id, req.params.userId);
   res.status(200).json({
@@ -90,6 +103,56 @@ const addStudent = async (req, res) => {
   });
 };
 
+const getDashboard = async (req, res) => {
+  const teacherId = req.user.id;
+  // 
+  const totalGoals = await db.Goal.count({ where: { teacherId } });
+  //
+  const totalStudents = await db.User.count({
+    include: [
+      {
+        model: db.Teacher,
+        where: { id: teacherId },
+        through: { attributes: [] },
+        required: true,
+      }
+    ],
+    distinct: true,
+  });
+  // 
+  const pendingCount = await db.UserTask.count({
+    where: { status: { [db.Sequelize.Op.ne]: 'Completed' } },
+    include: [
+      {
+        model: db.Task,
+        required: true,
+        include: [{ model: db.Goal, where: { teacherId }, required: true }],
+      }
+    ],
+  });
+  //
+  const completedCount = await db.UserTask.count({
+    where: { status: 'Completed' },
+    include: [
+      {
+        model: db.Task,
+        required: true,
+        include: [{ model: db.Goal, where: { teacherId }, required: true }],
+      }
+    ],
+  });
+  //
+  res.status(200).json({
+    success: true,
+    data: {
+      totalGoals,
+      totalStudents,
+      totalTasksPending: pendingCount,
+      totalTasksCompleted: completedCount,
+    },
+  });
+};
+
 module.exports = {
   createTeacher,
   getTeacherById,
@@ -99,4 +162,6 @@ module.exports = {
   loginTeacher,
   getStudentProgress,
   addStudent,
+  getMe,
+  getDashboard,
 };

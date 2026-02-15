@@ -13,5 +13,7 @@ const addStudentValidation = [
 
 router.get("/progress/:userId", checkAuth, checkTeacherVerified, TeacherController.getStudentProgress);
 router.post("/students", checkAuth, checkTeacherVerified, addStudentValidation, validate, TeacherController.addStudent);
+router.get('/me', checkAuth, TeacherController.getMe);
+router.get('/dashboard', checkAuth, checkTeacherVerified, TeacherController.getDashboard);
 
 module.exports = router;

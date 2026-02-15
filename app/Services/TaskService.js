@@ -40,6 +40,25 @@ const getAllTasks = async (page = 1, limit = 15, includeRelations = false) => {
   return await db.Task.findAndCountAll(options);
 };
 
+const getAllTasksSortedByDeadline = async (
+  page = 1,
+  limit = 15,
+  includeRelations = false,
+  direction = 'ASC'
+) => {
+  const offset = (page - 1) * limit;
+  const orderDir = String(direction).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+  const options = {
+    limit,
+    offset,
+    order: [['deadline', orderDir], ['createdAt', 'DESC']],
+  };
+  if (includeRelations) {
+    options.include = [{ model: db.Goal }];
+  }
+  return await db.Task.findAndCountAll(options);
+};
+
 const getTasksByGoal = async (goalId, page = 1, limit = 15) => {
   const offset = (page - 1) * limit;
   return await db.Task.findAndCountAll({
@@ -85,4 +104,5 @@ module.exports = {
   updateTask,
   deleteTask,
   assignTaskToUsers,
+  getAllTasksSortedByDeadline,
 };
