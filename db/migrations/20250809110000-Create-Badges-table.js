@@ -23,7 +23,7 @@ module.exports = {
       },
       minXpRequired: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,

@@ -1,155 +1,125 @@
 const UserResource = require('../app/Resource/UserResource');
 const db = require('../db/models');
-const notfoundError = require('../app/Error/NotFoundError');
+const NotFoundError = require('../app/Error/NotFoundError');
 const handleJsonImage = require("../app/Services/handleJsonImage");
 
 
+const buildGradeWhere = (base = {}, grade) => {
+    if (grade) return { ...base, grade };
+    return base;
+};
+
+//Controllers
+
 const getUserByToken = async (req, res) => {
     const user = await db.User.findByPk(req.user.id);
-    if (!user) throw new notfoundError('User not found');
-    res.status(200).json({
-        success: true,
-        user: UserResource(user)
-    });
+    if (!user) throw new NotFoundError('User not found');
+    res.status(200).json({ success: true, user: UserResource(user) });
 };
 
 const getUserById = async (req, res) => {
     const user = await db.User.findByPk(req.params.id);
-    if (!user) throw new notfoundError('User not found');
-    res.status(200).json({
-        success: true,
-        user: UserResource(user)
-    });
+    if (!user) throw new NotFoundError('User not found');
+    res.status(200).json({ success: true, user: UserResource(user) });
 };
+
 
 const getAllUsers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 15;
     const offset = (page - 1) * limit;
-    const { count, rows } = await db.User.findAndCountAll({
-        limit,
-        offset,
-    });
+    const where = buildGradeWhere({}, req.query.grade);
+
+    const { count, rows } = await db.User.findAndCountAll({ where, limit, offset });
     res.status(200).json({
         success: true,
-        users: rows.map(data => UserResource(data)),
-        pagination: {
-            total: count,
-            page,
-            pages: Math.ceil(count / limit)
-        }
+        users: rows.map(u => UserResource(u)),
+        pagination: { total: count, page, limit, pages: Math.ceil(count / limit) },
     });
 };
 
-
 const updateUserByToken = async (req, res) => {
     const user = await db.User.findByPk(req.user.id);
-    if (!user) throw new notfoundError('User not found');
+    if (!user) throw new NotFoundError('User not found');
     const allowedUpdates = ['fullName', 'email', 'grade'];
     allowedUpdates.forEach((field) => {
         if (req.body[field] !== undefined) user[field] = req.body[field];
     });
     if (req.body.image) await handleJsonImage(user, req.body.image);
     await user.save();
-    res.status(200).json({
-        success: true,
-        message: 'User updated',
-        user: UserResource(user)
-    });
+    res.status(200).json({ success: true, message: 'User updated', user: UserResource(user) });
 };
 
 const deleteUserById = async (req, res) => {
-    const { id } = req.params;
-    const user = await db.User.findByPk(id);
-    if (!user) throw new notfoundError('User not found');
+    const user = await db.User.findByPk(req.params.id);
+    if (!user) throw new NotFoundError('User not found');
     await user.destroy();
-    res.status(200).json({
-        success: true,
-        message: 'User deleted successfully'
-    });
+    res.status(200).json({ success: true, message: 'User deleted successfully' });
 };
 
-const searchUserByNameOrEmail = async (req, res) => {
-    const { query } = req.query;
-    if (!query) {
-        return res.status(400).json({
-            success: false,
-            message: 'Search query is required'
-        });
-    }
 
+const searchUserByNameOrEmail = async (req, res) => {
+    const { query, grade } = req.query;
+    if (!query) {
+        return res.status(400).json({ success: false, message: 'Search query is required' });
+    }
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 15;
     const offset = (page - 1) * limit;
 
-    const { count, rows } = await db.User.findAndCountAll({
-        where: {
-            [db.Sequelize.Op.or]: [
-                { fullName: { [db.Sequelize.Op.iLike]: `%${query}%` } },
-                { email: { [db.Sequelize.Op.iLike]: `%${query}%` } }
-            ]
-        },
-        limit,
-        offset,
-    });
+    const nameEmailCondition = {
+        [db.Sequelize.Op.or]: [
+            { fullName: { [db.Sequelize.Op.iLike]: `%${query}%` } },
+            { email: { [db.Sequelize.Op.iLike]: `%${query}%` } },
+        ],
+    };
+    const where = grade
+        ? { [db.Sequelize.Op.and]: [nameEmailCondition, { grade }] }
+        : nameEmailCondition;
 
+    const { count, rows } = await db.User.findAndCountAll({ where, limit, offset });
     res.status(200).json({
         success: true,
-        users: rows.map(data => UserResource(data)),
-        pagination: {
-            total: count,
-            page,
-            pages: Math.ceil(count / limit)
-        }
+        users: rows.map(u => UserResource(u)),
+        pagination: { total: count, page, limit, pages: Math.ceil(count / limit) },
     });
 };
 
 const getUsersByGoal = async (req, res) => {
     const { goalId } = req.params;
-
     const goal = await db.Goal.findByPk(goalId);
-    if (!goal) throw new notfoundError('Goal not found');
+    if (!goal) throw new NotFoundError('Goal not found');
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 15;
     const offset = (page - 1) * limit;
 
     const { count, rows } = await db.User.findAndCountAll({
-        include: [
-            {
-                model: db.Task,
-                as: 'Tasks',
-                where: { goalId },
-                through: { attributes: [] },
-                required: true
-            }
-        ],
+        include: [{
+            model: db.Task,
+            where: { goalId },
+            through: { attributes: [] },
+            required: true,
+        }],
         limit,
         offset,
         distinct: true,
-        subQuery: false
+        subQuery: false,
     });
-
     res.status(200).json({
         success: true,
         goalId,
-        users: rows.map(data => UserResource(data)),
-        pagination: {
-            total: count,
-            page,
-            pages: Math.ceil(count / limit)
-        }
+        users: rows.map(u => UserResource(u)),
+        pagination: { total: count, page, limit, pages: Math.ceil(count / limit) },
     });
 };
+
 
 const getRanking = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 15;
     const offset = (page - 1) * limit;
-    const grade = req.query.grade;
-
-    const where = {};
-    if (grade) where.grade = grade;
+    const where = buildGradeWhere({}, req.query.grade);
 
     const { count, rows } = await db.User.findAndCountAll({
         where,
@@ -157,21 +127,14 @@ const getRanking = async (req, res) => {
         limit,
         offset,
     });
-
     res.status(200).json({
         success: true,
         users: rows.map(u => UserResource(u)),
-        pagination: {
-            total: count,
-            page,
-            limit,
-            pages: Math.ceil(count / limit)
-        }
+        pagination: { total: count, page, limit, pages: Math.ceil(count / limit) },
     });
 };
 
 const getMostActiveThisWeek = async (req, res) => {
-    //
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
@@ -182,23 +145,21 @@ const getMostActiveThisWeek = async (req, res) => {
     const startOfWeek = new Date(now);
     startOfWeek.setDate(diff);
     startOfWeek.setHours(0, 0, 0, 0);
-    const end = new Date();
 
-    // Aggregate on user_tasks
     const rows = await db.UserTask.findAll({
         attributes: [
             'userId',
-            [db.Sequelize.fn('COUNT', db.Sequelize.col('id')), 'completedCount']
+            [db.Sequelize.fn('COUNT', db.Sequelize.col('id')), 'completedCount'],
         ],
         where: {
             status: 'Completed',
-            completedAt: { [db.Sequelize.Op.between]: [startOfWeek, end] }
+            completedAt: { [db.Sequelize.Op.between]: [startOfWeek, now] },
         },
         group: ['userId'],
         order: [[db.Sequelize.literal('COUNT(id)'), 'DESC']],
         limit,
         offset,
-        raw: true
+        raw: true,
     });
 
     const userIds = rows.map(r => r.userId);
@@ -206,12 +167,9 @@ const getMostActiveThisWeek = async (req, res) => {
         return res.status(200).json({ success: true, users: [], pagination: { page, limit } });
     }
 
-    const users = await db.User.findAll({
-        where: { id: userIds },
-    });
-
-    // Map counts to users
+    const users = await db.User.findAll({ where: { id: userIds } });
     const usersMap = new Map(users.map(u => [u.id, u.get({ plain: true })]));
+
     const out = rows.map(r => {
         const u = usersMap.get(r.userId) || {};
         return {
@@ -220,7 +178,7 @@ const getMostActiveThisWeek = async (req, res) => {
             email: u.email || null,
             grade: u.grade || null,
             xpPoints: u.xpPoints || 0,
-            completedCount: parseInt(r.completedCount, 10) || 0
+            completedCount: parseInt(r.completedCount, 10) || 0,
         };
     });
 
@@ -236,5 +194,5 @@ module.exports = {
     searchUserByNameOrEmail,
     getUsersByGoal,
     getRanking,
-    getMostActiveThisWeek
+    getMostActiveThisWeek,
 };

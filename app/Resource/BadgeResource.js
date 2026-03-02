@@ -6,6 +6,6 @@ module.exports = (badge) => {
     name: badge.name,
     description: badge.description,
     iconPath: badge.iconPath || null,
-    minXpRequired: badge.minXpRequired,
+    goalId: badge.goalId || null,
   };
 };

@@ -10,6 +10,7 @@ module.exports = (task) => {
     deadline: task.deadline,
     taskKey: task.taskKey || null,
     isUsedKey: !!task.isUsedKey,
+    xpPoints: task.xpPoints != null ? task.xpPoints : 10,
   };
 
   if (task.Goal) {

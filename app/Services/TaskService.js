@@ -1,5 +1,6 @@
 "use strict";
 
+const { Op } = require('sequelize');
 const db = require('../../db/models');
 const NotFoundError = require('../Error/NotFoundError');
 
@@ -10,6 +11,7 @@ const createTask = async (data) => {
     deadline: data.deadline,
     taskKey: data.taskKey,
     isUsedKey: data.isUsedKey || false,
+    xpPoints: data.xpPoints != null ? data.xpPoints : 10,
     goalId: data.goalId,
   });
 };
@@ -44,7 +46,7 @@ const getAllTasksSortedByDeadline = async (
   page = 1,
   limit = 15,
   includeRelations = false,
-  direction = 'ASC'
+  direction = 'ASC',
 ) => {
   const offset = (page - 1) * limit;
   const orderDir = String(direction).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
@@ -63,6 +65,44 @@ const getTasksByGoal = async (goalId, page = 1, limit = 15) => {
   const offset = (page - 1) * limit;
   return await db.Task.findAndCountAll({
     where: { goalId },
+    limit,
+    offset,
+    order: [['createdAt', 'DESC']],
+    include: [{ model: db.Goal }],
+  });
+};
+
+
+const getTasksByTeacher = async (teacherId, page = 1, limit = 15, goalId = null, search = null) => {
+  const offset = (page - 1) * limit;
+
+  const taskWhere = {};
+  if (goalId) taskWhere.goalId = goalId;
+  if (search) taskWhere.title = { [Op.iLike]: `%${search}%` };
+
+  return await db.Task.findAndCountAll({
+    where: taskWhere,
+    limit,
+    offset,
+    order: [['createdAt', 'DESC']],
+    include: [
+      {
+        model: db.Goal,
+        where: { teacherId },
+        required: true,
+      },
+    ],
+  });
+};
+
+const searchFilterTasks = async (page = 1, limit = 15, goalId = null, search = null) => {
+  const offset = (page - 1) * limit;
+  const where = {};
+  if (goalId) where.goalId = goalId;
+  if (search) where.title = { [Op.iLike]: `%${search}%` };
+
+  return await db.Task.findAndCountAll({
+    where,
     limit,
     offset,
     order: [['createdAt', 'DESC']],
@@ -101,6 +141,8 @@ module.exports = {
   getTaskById,
   getAllTasks,
   getTasksByGoal,
+  getTasksByTeacher,
+  searchFilterTasks,
   updateTask,
   deleteTask,
   assignTaskToUsers,

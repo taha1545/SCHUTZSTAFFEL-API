@@ -42,6 +42,14 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 defaultValue: 0,
             },
+            imagePath: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
+            lastActivityDate: {
+                type: DataTypes.DATEONLY,
+                allowNull: true,
+            },
         },
         {
             tableName: "users",

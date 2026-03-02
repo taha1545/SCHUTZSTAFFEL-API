@@ -9,6 +9,7 @@ module.exports = (goal) => {
     description: goal.description,
     duration: goal.duration,
     domain: goal.domain,
+    status: goal.status,
   };
 
   if (goal.Teacher) {
@@ -21,7 +22,10 @@ module.exports = (goal) => {
       title: t.title,
       description: t.description,
       deadline: t.deadline,
+      xpPoints: t.xpPoints,
     }));
+    // Derive completion flag: all tasks done?
+    out.allTasksCompleted = goal.status === 'Completed';
   }
 
   return out;

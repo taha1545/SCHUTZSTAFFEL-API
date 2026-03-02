@@ -49,6 +49,10 @@ db.Badge.hasMany(db.UserBadge, { foreignKey: "badgeId" });
 db.UserBadge.belongsTo(db.User, { foreignKey: "userId" });
 db.UserBadge.belongsTo(db.Badge, { foreignKey: "badgeId" });
 
+// Badge <-> Goal (one badge per goal)
+db.Goal.hasOne(db.Badge, { foreignKey: "goalId" });
+db.Badge.belongsTo(db.Goal, { foreignKey: "goalId" });
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 

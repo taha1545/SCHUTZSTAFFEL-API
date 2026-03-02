@@ -9,6 +9,7 @@ const createGoal = async (data) => {
     description: data.description,
     duration: data.duration,
     domain: data.domain,
+    status: data.status || 'In-Progress',
     teacherId: data.teacherId,
   });
 };
@@ -65,6 +66,38 @@ const deleteGoal = async (id) => {
   return goal;
 };
 
+const checkCompleteGoal = async (goalId, userId, transaction) => {
+  // 
+  const goal = await db.Goal.findByPk(goalId, { transaction });
+  if (!goal || goal.status !== 'Completed') {
+    return false;
+  }
+  // 
+  const tasks = await db.Task.findAll({
+    where: { goalId },
+    attributes: ['id'],
+    transaction,
+  });
+  //
+  if (!tasks.length) return false;
+  const taskIds = tasks.map(t => t.id);
+  // 
+  const completedCount = await db.UserTask.count({
+    where: {
+      userId,
+      taskId: taskIds,
+      status: 'Completed',
+    },
+    transaction,
+  });
+  // 
+  if (completedCount === taskIds.length) {
+      return true;
+    //
+  }
+  return false;
+};
+
 module.exports = {
   createGoal,
   getGoalById,
@@ -72,4 +105,5 @@ module.exports = {
   getGoalsByTeacher,
   updateGoal,
   deleteGoal,
+  checkCompleteGoal,
 };

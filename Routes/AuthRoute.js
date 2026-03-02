@@ -10,9 +10,10 @@ const {
   loginTeacherValidation,
 } = require("../app/Validators/TeacherValidator");
 const validate = require("../app/Middlewares/validate");
+const upload = require("../app/Services/Storage")
 
 // Student 
-router.post("/student/signup", UserValidator.signupValidation, validate, AuthController.signUp);
+router.post("/student/signup", upload.single("image"), UserValidator.signupValidation, validate, AuthController.signUp);
 router.post("/student/login", UserValidator.loginValidation, validate, AuthController.login);
 
 // Teacher 

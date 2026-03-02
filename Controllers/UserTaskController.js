@@ -70,6 +70,23 @@ const getUserTasksByTask = async (req, res) => {
   });
 };
 
+
+const getActiveTasksByUser = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 15;
+  const { count, rows } = await UserTaskService.getActiveTasksByUser(req.params.userId, page, limit);
+  res.status(200).json({
+    success: true,
+    userTasks: rows.map(userTask => UserTaskResource(userTask)),
+    pagination: {
+      total: count,
+      page,
+      limit,
+      pages: Math.ceil(count / limit),
+    },
+  });
+};
+
 const updateUserTask = async (req, res) => {
   const userTask = await UserTaskService.updateUserTask(req.params.id, req.body);
   res.status(200).json({
@@ -93,6 +110,7 @@ module.exports = {
   getAllUserTasks,
   getUserTasksByUser,
   getUserTasksByTask,
+  getActiveTasksByUser,
   updateUserTask,
   deleteUserTask,
 };

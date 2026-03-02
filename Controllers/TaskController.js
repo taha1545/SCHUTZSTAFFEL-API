@@ -2,9 +2,16 @@
 
 const TaskResource = require('../app/Resource/TaskResource');
 const TaskService = require('../app/Services/TaskService');
+const SocketService = require('../app/Services/SocketService');
+
 
 const createTask = async (req, res) => {
   const task = await TaskService.createTask(req.body);
+  //
+  SocketService.broadcast('task:created', {
+    task: TaskResource(task),
+  });
+  //
   res.status(201).json({
     success: true,
     message: 'Task created successfully',
@@ -72,8 +79,53 @@ const getTasksByGoal = async (req, res) => {
   });
 };
 
+const getTasksByTeacher = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 15;
+  const goalId = req.query.goalId ? parseInt(req.query.goalId) : null;
+  const search = req.query.q || null;
+  const { count, rows } = await TaskService.getTasksByTeacher(
+    req.params.teacherId, page, limit, goalId, search
+  );
+  res.status(200).json({
+    success: true,
+    tasks: rows.map(task => TaskResource(task)),
+    pagination: {
+      total: count,
+      page,
+      limit,
+      pages: Math.ceil(count / limit),
+    },
+  });
+};
+
+
+const searchFilterTasks = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 15;
+  const goalId = req.query.goalId ? parseInt(req.query.goalId) : null;
+  const search = req.query.q || null;
+  const { count, rows } = await TaskService.searchFilterTasks(page, limit, goalId, search);
+  res.status(200).json({
+    success: true,
+    tasks: rows.map(task => TaskResource(task)),
+    pagination: {
+      total: count,
+      page,
+      limit,
+      pages: Math.ceil(count / limit),
+    },
+  });
+};
+
 const updateTask = async (req, res) => {
   const task = await TaskService.updateTask(req.params.id, req.body);
+  //
+  SocketService.broadcast('task:updated', {
+    taskId: task.id,
+    task: TaskResource(task),
+  });
+  //
   res.status(200).json({
     success: true,
     message: 'Task updated successfully',
@@ -100,6 +152,13 @@ const assignTask = async (req, res) => {
     });
   }
   const { task, assigned } = await TaskService.assignTaskToUsers(taskId, ids);
+  //
+  ids.forEach((id) => {
+    SocketService.emitToUser(id, 'task:assigned', {
+      task: TaskResource(task),
+    });
+  });
+  //
   res.status(201).json({
     success: true,
     message: 'Task assigned successfully',
@@ -114,6 +173,8 @@ module.exports = {
   getTaskById,
   getAllTasks,
   getTasksByGoal,
+  getTasksByTeacher,
+  searchFilterTasks,
   updateTask,
   deleteTask,
   assignTask,

@@ -1,12 +1,16 @@
 const db = require('../db/models');
 const ContactResource = require('../app/Resource/ContactResource');
 const notfoundError = require('../app/Error/NotFoundError');
+const teacher = require('../db/models/teacher');
 
 const All = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
+    const teacherId = req.query.teacherId;
+    const where = teacherId ? { teacherId } : {};
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     const { count, rows } = await db.Contact.findAndCountAll({
+        where,
         offset,
         limit,
         order: [['createdAt', 'DESC']]
@@ -38,7 +42,7 @@ const Show = async (req, res) => {
 };
 
 const Create = async (req, res) => {
-    const { name = null, email = null, phone = null, message = null } = req.body;
+    const { name = null, email = null, phone = null, message = null, teacherId = null } = req.body;
     if (!message) {
         throw new Error("message should'nt be null");
     }
@@ -46,7 +50,8 @@ const Create = async (req, res) => {
         name,
         email,
         phone,
-        message
+        message,
+        teacherId
     });
     res.status(201).json({
         success: true,

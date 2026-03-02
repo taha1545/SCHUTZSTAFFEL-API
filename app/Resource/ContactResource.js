@@ -7,6 +7,7 @@ module.exports = (contact) => {
         phone: contact.email || "",
         email: contact.email || "",
         message: contact.message,
+        teacherId: contact.teacherId,
         createdAt: dayjs(contact.createdAt).format('YYYY-MM-DD HH:mm:ss')
     }
 };

@@ -9,6 +9,9 @@ const createTaskValidation = [
   body('deadline').optional().isISO8601().withMessage('Deadline must be a valid date'),
   body('taskKey').optional(),
   body('isUsedKey').optional().isBoolean().withMessage('isUsedKey must be boolean'),
+  body('xpPoints')
+    .optional()
+    .isInt({ min: 0 }).withMessage('xpPoints must be a non-negative integer'),
   body('goalId')
     .optional()
     .isInt().withMessage('goalId must be an integer')
@@ -24,6 +27,9 @@ const updateTaskValidation = [
   body('deadline').optional().isISO8601().withMessage('Deadline must be a valid date'),
   body('taskKey').optional(),
   body('isUsedKey').optional().isBoolean().withMessage('isUsedKey must be boolean'),
+  body('xpPoints')
+    .optional()
+    .isInt({ min: 0 }).withMessage('xpPoints must be a non-negative integer'),
   body('goalId')
     .optional()
     .isInt().withMessage('goalId must be an integer')

@@ -9,47 +9,49 @@ const notfoundError = require('../app/Error/NotFoundError');
 const crypto = require('crypto');
 
 const signUp = async (req, res) => {
-    const { fullName, email, grade } = req.body;
-    const uniqueCode =crypto.randomBytes(4).toString("hex");
-    //
-    const user = await db.User.create({
-        fullName,
-        email,
-        grade,
-        uniqueCode,
+  const { fullName, email, grade } = req.body;
+  const uniqueCode = crypto.randomBytes(4).toString("hex");
+  const imagePath = req.file ? req.file.path : null;
+  //
+  const user = await db.User.create({
+    fullName,
+    email,
+    grade,
+    uniqueCode,
+    imagePath
+  });
+  const token = Auth.CreateToken({
+    id: user.id,
+    role: "student"
+  });
+  welcomeMail.sendMail(user.email)
+    .catch(err => {
+      console.error("Email send failed:", err.message);
     });
-    const token = Auth.CreateToken({
-        id: user.id,
-        role: "student"
-    });
-    welcomeMail.sendMail(user.email)
-        .catch(err => {
-            console.error("Email send failed:", err.message);
-        });
-    res.status(201).json({
-        success: true,
-        message: "User created successfully",
-        data: UserResource(user),
-        token
-    });
+  res.status(201).json({
+    success: true,
+    message: "User created successfully",
+    data: UserResource(user),
+    token
+  });
 };
 
 const login = async (req, res) => {
-    const { uniqueCode } = req.body;
-    const user = await db.User.findOne({ where: { uniqueCode } });
-    if (!user) {
-        throw new AuthError('Invalid unique code');
-    }
-    const token = Auth.CreateToken({
-        id: user.id,
-        role: "student"
-    });
-    res.status(200).json({
-        success: true,
-        message: "User logged in successfully",
-        data: UserResource(user),
-        token
-    });
+  const { uniqueCode } = req.body;
+  const user = await db.User.findOne({ where: { uniqueCode } });
+  if (!user) {
+    throw new AuthError('Invalid unique code');
+  }
+  const token = Auth.CreateToken({
+    id: user.id,
+    role: "student"
+  });
+  res.status(200).json({
+    success: true,
+    message: "User logged in successfully",
+    data: UserResource(user),
+    token
+  });
 };
 
 

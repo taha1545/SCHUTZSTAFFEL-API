@@ -1,4 +1,3 @@
-
 "use strict";
 
 module.exports = (user) => {
@@ -12,6 +11,8 @@ module.exports = (user) => {
         xpPoints: user.xpPoints || 0,
         level: user.level || 1,
         currentStreak: user.currentStreak || 0,
+        lastActivityDate: user.lastActivityDate || null,
+        imagePath: user.imagePath || null,
     };
 
     if (user.Badges) {
@@ -20,7 +21,7 @@ module.exports = (user) => {
             name: b.name,
             description: b.description,
             iconPath: b.iconPath,
-            minXpRequired: b.minXpRequired,
+            goalId: b.goalId || null,
         }));
     }
 

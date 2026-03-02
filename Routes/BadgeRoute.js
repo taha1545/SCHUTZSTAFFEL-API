@@ -6,7 +6,7 @@ const BadgeController = require('../Controllers/BadgeController');
 const { createBadgeValidation, updateBadgeValidation } = require('../app/Validators/BadgeValidator');
 const validate = require('../app/Middlewares/validate');
 const { checkAuth, checkAdmin } = require('../app/Middlewares/Auth');
-const upload = require('../app/Services/Storage')
+const upload = require('../app/s3/multerS3');
 
 router.get('/', BadgeController.getAllBadges);
 router.get('/:id', BadgeController.getBadgeById);

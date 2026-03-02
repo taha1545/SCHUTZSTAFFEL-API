@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
+        teacherId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        }
     }, {
         tableName: "contacts"
     });

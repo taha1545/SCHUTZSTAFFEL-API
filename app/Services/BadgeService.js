@@ -8,7 +8,7 @@ const createBadge = async (data) => {
     name: data.name,
     description: data.description,
     iconPath: data.iconPath,
-    minXpRequired: data.minXpRequired,
+    goalId: data.goalId || null,
   });
 };
 
@@ -18,12 +18,16 @@ const getBadgeById = async (id) => {
   return badge;
 };
 
+const getBadgeByGoalId = async (goalId) => {
+  return await db.Badge.findOne({ where: { goalId } });
+};
+
 const getAllBadges = async (page = 1, limit = 15) => {
   const offset = (page - 1) * limit;
   return await db.Badge.findAndCountAll({
     limit,
     offset,
-    order: [['minXpRequired', 'ASC']],
+    order: [['createdAt', 'ASC']],
   });
 };
 
@@ -42,6 +46,7 @@ const deleteBadge = async (id) => {
 module.exports = {
   createBadge,
   getBadgeById,
+  getBadgeByGoalId,
   getAllBadges,
   updateBadge,
   deleteBadge,

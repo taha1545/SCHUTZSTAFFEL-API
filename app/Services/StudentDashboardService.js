@@ -10,7 +10,7 @@ const getDashboard = async (userId) => {
         model: db.Badge,
         as: "Badges",
         through: { attributes: ["earnedAt"] },
-        attributes: ["id", "name", "description", "iconPath", "minXpRequired"],
+        attributes: ["id", "name", "description", "iconPath", "goalId"],
       },
     ],
   });
@@ -72,7 +72,7 @@ const getDashboard = async (userId) => {
     name: b.name,
     description: b.description,
     iconPath: b.iconPath,
-    minXpRequired: b.minXpRequired,
+    goalId: b.goalId,
     earnedAt: b.UserBadge?.earnedAt || null,
   }));
 

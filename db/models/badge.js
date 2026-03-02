@@ -16,9 +16,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      minXpRequired: {
+      goalId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
+        references: { model: "goals", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL",
       },
     },
     {

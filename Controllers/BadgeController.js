@@ -4,7 +4,7 @@ const BadgeResource = require('../app/Resource/BadgeResource');
 const BadgeService = require('../app/Services/BadgeService');
 
 const createBadge = async (req, res) => {
-  const iconPath = req.file ? req.file.path : null;
+  const iconPath = req.file ? req.file.key : null;
   const badge = await BadgeService.createBadge({ ...req.body, iconPath });
   res.status(201).json({
     success: true,
