@@ -108,17 +108,7 @@ const getDashboard = async (req, res) => {
   // 
   const totalGoals = await db.Goal.count({ where: { teacherId } });
   //
-  const totalStudents = await db.User.count({
-    include: [
-      {
-        model: db.Teacher,
-        where: { id: teacherId },
-        through: { attributes: [] },
-        required: true,
-      }
-    ],
-    distinct: true,
-  });
+  const totalStudents = await db.User.count();
   // 
   const pendingCount = await db.UserTask.count({
     where: { status: { [db.Sequelize.Op.ne]: 'Completed' } },

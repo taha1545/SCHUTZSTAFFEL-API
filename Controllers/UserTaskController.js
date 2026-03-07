@@ -73,7 +73,7 @@ const getUserTasksByTask = async (req, res) => {
 
 const getActiveTasksByUser = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 15;
+  const limit = parseInt(req.query.limit) || 30;
   const { count, rows } = await UserTaskService.getActiveTasksByUser(req.params.userId, page, limit);
   res.status(200).json({
     success: true,

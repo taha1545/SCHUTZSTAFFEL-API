@@ -84,24 +84,34 @@ const getUserTasksByTask = async (taskId, page = 1, limit = 15) => {
 };
 
 
-const getActiveTasksByUser = async (userId, page = 1, limit = 15) => {
+const getActiveTasksByUser = async (userId, page = 1, limit = 30) => {
   const offset = (page - 1) * limit;
+
   return await db.UserTask.findAndCountAll({
+    distinct: true,
     where: {
       userId,
-      status: { [db.Sequelize.Op.ne]: 'Completed' },
+      status: { [db.Sequelize.Op.ne]: "Completed" },
     },
     limit,
     offset,
-    order: [['createdAt', 'DESC']],
+    order: [["createdAt", "DESC"]],
     include: [
       {
         model: db.Task,
+        where: {
+          [db.Sequelize.Op.or]: [
+            { deadline: null },
+            { deadline: { [db.Sequelize.Op.gt]: new Date() } },
+          ],
+        },
         include: [{ model: db.Goal }],
       },
     ],
   });
 };
+
+
 
 async function updateUserStreak(user, transaction) {
   //
@@ -143,7 +153,7 @@ const updateUserTask = async (id, data) => {
 
       const task = await db.Task.findByPk(userTask.taskId, { transaction });
 
-      // LOCK user row (important for streak + xp safety)
+      // 
       const user = await db.User.findByPk(userTask.userId, {
         transaction,
         lock: transaction.LOCK.UPDATE,
@@ -157,9 +167,14 @@ const updateUserTask = async (id, data) => {
         { transaction }
       );
 
-      // 🔥 UPDATE STREAK HERE
+      // 🔥
       await updateUserStreak(user, transaction);
-
+      //
+      SocketService.broadcast("task:completed:brodcast", {
+        taskId: userTask.taskId,
+        Task,
+        user
+      });
       // Check goal completion
       if (task.goalId) {
         goalCompleted = await GoalService.checkCompleteGoal(
@@ -186,6 +201,10 @@ const updateUserTask = async (id, data) => {
                 },
                 { transaction }
               );
+              SocketService.broadcast("Badge:earned:brodcast", {
+                user,
+                badge,
+              });
             }
           }
         }
@@ -193,7 +212,7 @@ const updateUserTask = async (id, data) => {
 
       await transaction.commit();
 
-      // SOCKET EVENTS (after commit only)
+      // 
       SocketService.emitToUser(userTask.userId, "task:completed", {
         taskId: userTask.taskId,
       });
